@@ -7,5 +7,5 @@ COMPLIANCE_MAP = {
 }
 
 
-def map_compliance(finding) -> list[str]:
+def map_compliance(finding: dict) -> list[str]:
     return COMPLIANCE_MAP.get(finding.rule_id, [])
