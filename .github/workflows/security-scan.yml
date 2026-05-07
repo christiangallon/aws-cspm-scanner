@@ -1,0 +1,53 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cspm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CSPM_SCANNER_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scanner
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run CSPM scan
+        run: aws-cspm --output report.json --html report.html
+
+      - name: Upload report artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cspm-report-${{ github.run_id }}
+          path: |
+            report.json
+            report.html
+
+      - name: Check for critical findings
+        run: |
+          critical_count=$(jq '.summary.critical' report.json)
+          high_count=$(jq '.summary.high' report.json)
+          if [ "$critical_count" -gt 0 ] || [ "$high_count" -gt 0 ]; then
+            echo "::error::Found $critical_count critical and $high_count high severity findings"
+            exit 2
+          fi
