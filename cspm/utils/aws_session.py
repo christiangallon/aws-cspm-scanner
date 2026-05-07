@@ -1,7 +1,6 @@
 import boto3
-
-
 from boto3.session import Session
+
 
 def get_session(
     profile: str | None = None,
