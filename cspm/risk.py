@@ -3,7 +3,7 @@ from collections import Counter
 from cspm.models import SEVERITY_WEIGHTS
 
 
-def calculate_risk_score(findings):
+def calculate_risk_score(findings: list[dict]) -> int:
     total = sum(SEVERITY_WEIGHTS.get(f.severity, 0) for f in findings)
 
     if total == 0:
@@ -13,7 +13,7 @@ def calculate_risk_score(findings):
     return score
 
 
-def summarize_findings(findings):
+def summarize_findings(findings: list[dict]) -> dict[str, int]:
     counts = Counter(f.severity for f in findings)
 
     return {"total": len(findings), "by_severity": dict(counts)}

@@ -1,9 +1,13 @@
 import boto3
 
 
+from boto3.session import Session
+
 def get_session(
-    profile: str | None = None, role_arn: str | None = None, session_name: str = "cspm-session"
-):
+    profile: str | None = None,
+    role_arn: str | None = None,
+    session_name: str = "cspm-session"
+) -> Session:
     base_session = boto3.Session(profile_name=profile) if profile else boto3.Session()
 
     if not role_arn:
